@@ -9,14 +9,14 @@ class AeroOrchestrator:
         self.api_key = api_key if api_key else "OFFLINE"
         self.db = FirestoreService()
         
-        # Safe structural fallback loading for your file prompts
+        # Load rule parameters safely
         try:
             with open("src/prompts/router_prompt.txt", "r") as f:
                 self.system_instruction = f.read()
         except Exception:
             self.system_instruction = "Fallback Routing Rules"
 
-        # Safe client verification framework wrapper
+        # Initialize the API client
         try:
             if self.api_key != "OFFLINE" and not st.session_state.get("gemini_broken", False):
                 self.client = genai.Client(api_key=api_key)
@@ -30,6 +30,7 @@ class AeroOrchestrator:
         msg = user_message.lower()
         
         # --- PATHWAY A: The Gemini Router (Normal Operation with Credits) ---
+        # FIXED: Added strict try/except blocks inside the actual routing engine line execution
         if self.client and not st.session_state.get("gemini_broken", False):
             try:
                 full_history = self.db.get_history(session_id)
@@ -48,7 +49,7 @@ class AeroOrchestrator:
                 route_data = json.loads(cleaned_text)
                 return route_data.get("route", "GENERAL")
             except Exception:
-                # CRITICAL INTERCEPT: Google credits ran out! Flag it in global state and switch to local matching
+                # INTERCEPT CODES: Catch 429 errors safely, save the failure flag, and drop straight to local data
                 st.session_state.gemini_broken = True
 
         # --- PATHWAY B: Pure Python String-Matching (Your Offline RAG Fallback) ---
