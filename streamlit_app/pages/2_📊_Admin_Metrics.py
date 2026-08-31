@@ -5,9 +5,9 @@ from src.tools.evaluator import PlatformEvaluator
 
 st.title("📊 Platform Telemetry & Data Benchmark Suite")
 
-# Block execution if not unlocked on home page
+# Multi-page persistent route security check guardrail
 if "authenticated" not in st.session_state or not st.session_state.authenticated:
-    st.error("🛑 Access Blocked. Please visit the Home Page and enter your credentials first.")
+    st.error("🛑 Access Blocked. Please return to the main App page and enter your credentials first.")
     st.stop()
 
 st.subheader("🧪 Dataset Verification Diagnostic")
