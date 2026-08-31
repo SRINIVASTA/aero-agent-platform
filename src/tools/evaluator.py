@@ -1,12 +1,16 @@
 import csv
 import json
 import os
+import time
 import pandas as pd
 from src.orchestrator import AeroOrchestrator
 
 class PlatformEvaluator:
     def __init__(self, api_key: str):
-        self.orchestrator = AeroOrchestrator(api_key=api_key)
+        # Fallback guardrail to prevent initializing with an empty string
+        if not api_key or len(api_key.strip()) == 0:
+            raise ValueError("The provided Gemini API Key is completely empty or missing.")
+        self.orchestrator = AeroOrchestrator(api_key=api_key.strip())
 
     def load_from_csv(self, file_path="data/evaluation_dataset.csv") -> list:
         dataset = []
@@ -26,11 +30,19 @@ class PlatformEvaluator:
     def run_evaluation(self, format_choice="CSV") -> pd.DataFrame:
         test_cases = self.load_from_csv() if format_choice.upper() == "CSV" else self.load_from_json()
         results = []
+        
         for case in test_cases:
+            # 1. Inject a 1-second pause block between rows to stop Google Server Errors
+            time.sleep(1.0)
+            
             if "fraud" in case["text"].lower() or "scam" in case["text"].lower():
                 actual_route = "ESCALATION"
             else:
-                actual_route = self.orchestrator.route_message("eval_session", case["text"])
+                try:
+                    actual_route = self.orchestrator.route_message("eval_session", case["text"])
+                except Exception as e:
+                    # Capture API failures elegantly inside the table rows instead of crashing the app
+                    actual_route = "API_ERROR"
             
             is_correct = (actual_route == case["expected_route"])
             results.append({
