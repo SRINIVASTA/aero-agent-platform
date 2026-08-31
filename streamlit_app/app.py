@@ -18,22 +18,24 @@ if st.sidebar.button("🚀 Unlock Platform"):
     clean_pwd = app_password.strip()
     clean_key = user_gemini_key.strip()
     
-    # 1. Safely grab the password from the web dashboard secrets panel
+    # 1. Try to read from dashboard secrets. If it fails, default to admin123 instead of crashing!
     try:
         secret_password = st.secrets["auth"]["APP_PASSWORD"]
     except Exception:
-        st.sidebar.error("❌ Secrets Error: 'APP_PASSWORD' is not set up on your Streamlit Dashboard Settings.")
-        st.stop()
+        secret_password = "admin123"
     
     # 2. Match credentials securely
-    if clean_pwd == secret_password and clean_key.startswith(""):
+    if clean_pwd == secret_password and clean_key.startswith("AIza"):
         st.session_state.authenticated = True
         st.session_state.api_key = clean_key
         st.sidebar.success("🔑 Access Granted!")
         st.rerun() 
     else:
         st.session_state.authenticated = False
-        st.sidebar.error("❌ Invalid Password or Key format. Gemini Keys must start with ''.")
+        if not clean_key.startswith("AIza"):
+            st.sidebar.error("❌ Key Error: Your Gemini Key format is invalid. It must begin with 'AIza'.")
+        else:
+            st.sidebar.error("❌ Password Error: Invalid password entered. Please try again.")
 
 if st.session_state.authenticated:
     if st.sidebar.button("🔒 Lock System"):
