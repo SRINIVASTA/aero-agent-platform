@@ -5,7 +5,6 @@ from src.services.firestore_service import FirestoreService
 
 class AeroOrchestrator:
     def __init__(self, api_key: str):
-        # Uses the key explicitly provided by the web user interface
         self.client = genai.Client(api_key=api_key)
         self.db = FirestoreService()
         with open("src/prompts/router_prompt.txt", "r") as f:
@@ -13,8 +12,14 @@ class AeroOrchestrator:
 
     def route_message(self, session_id: str, user_message: str) -> str:
         self.db.add_message(session_id, "user", user_message)
-        history = self.db.get_history(session_id)
-        context = "\n".join([f"{m['role']}: {m['content']}" for m in history])
+        
+        # 1. Fetch complete logs
+        full_history = self.db.get_history(session_id)
+        
+        # 2. FIXED: Keep only the most recent 5 messages to avoid payload errors
+        recent_history = full_history[-5:] if len(full_history) > 5 else full_history
+        
+        context = "\n".join([f"{m['role']}: {m['content']}" for m in recent_history])
         
         response = self.client.models.generate_content(
             model='gemini-2.5-flash',
