@@ -5,7 +5,7 @@ Available Routes:
 - BILLING: Invoices, card updates, fees, unexpected charges.
 - ORDERS: Tracking, shipping delays, change address.
 - REFUNDS: Return requests, money back policies.
-- TECH_SUPPORT: Bugs, errors, login issues, crashes.
-- GENERAL: Greeting, chitchat, store hours, generic company info, out of scope requests.
+- TECH_SUPPORT: Application crashes, software bugs, login button failures, app freezes, and 404 errors.
+- GENERAL: Basic greetings, chitchat, store retail hours, and standard account sign-up information FAQ text.
 
 Rule: Respond ONLY with a valid JSON containing 'route' and 'reason'. Do not wrap your response in markdown formatting or backticks. Respond with plain text raw JSON string.
