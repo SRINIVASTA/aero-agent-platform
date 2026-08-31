@@ -1,0 +1,11 @@
+text,expected_route,priority
+"Why was I charged twice this month? Please check my statement.",BILLING,high
+"My credit card is expiring next week. How do I change it?",BILLING,medium
+"Where is my package? It was supposed to arrive two days ago.",ORDERS,high
+"I need to change the delivery address for my current shipment.",ORDERS,medium
+"I want to return this broken item and get my money back.",REFUNDS,high
+"What is your return policy for open-box electronics?",REFUNDS,low
+"The application keeps crashing every time I click the login button.",TECH_SUPPORT,high
+"I am getting a 404 error code when trying to load the dashboard.",TECH_SUPPORT,medium
+"Hello! Can you tell me what your retail store hours are?",GENERAL,low
+"This service is a total scam and I want to speak to a supervisor!",ESCALATION,high
