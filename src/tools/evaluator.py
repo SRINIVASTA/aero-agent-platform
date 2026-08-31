@@ -8,9 +8,12 @@ from src.orchestrator import AeroOrchestrator
 
 class PlatformEvaluator:
     def __init__(self, api_key: str):
-        # Allow fallback initialization if key missing/empty
         self.api_key = api_key if api_key else "OFFLINE"
-        self.orchestrator = AeroOrchestrator(api_key=self.api_key)
+        # Only initialize the live orchestrator object if Gemini isn't already flagged as broken
+        if not st.session_state.get("gemini_broken", False) and self.api_key != "OFFLINE":
+            self.orchestrator = AeroOrchestrator(api_key=self.api_key)
+        else:
+            self.orchestrator = None
 
     def load_from_csv(self, file_path="data/evaluation_dataset.csv") -> list:
         dataset = []
@@ -32,28 +35,28 @@ class PlatformEvaluator:
         results = []
         
         for case in test_cases:
-            # Short delay block to maintain stable API connections
-            time.sleep(0.2)
             msg = case["text"].lower()
             
-            # 1. Check for manual override terms first
+            # Rule 1: Instant static check for critical escalation terms
             if "fraud" in msg or "scam" in msg:
                 actual_route = "ESCALATION"
             else:
-                # --- PATHWAY A: Try Gemini Routing (If Credits Available) ---
-                try:
-                    # If a previous row already discovered Gemini is broken, skip the API call entirely
-                    if st.session_state.get("gemini_broken", False):
-                        raise ValueError("Gemini is flagged offline.")
-                        
-                    actual_route = self.orchestrator.route_message("eval_session", case["text"])
-                
-                # --- PATHWAY B: The Offline RAG Fallback Triage System ---
-                except Exception:
-                    # Flag the global system state so other components skip live calls immediately
-                    st.session_state.gemini_broken = True
-                    
-                    # Exact local keyword matching rules to determine target node without Gemini
+                # --- PATHWAY A: Try Live Gemini Routing (Only if completely clear and working) ---
+                if self.orchestrator and not st.session_state.get("gemini_broken", False):
+                    try:
+                        time.sleep(0.2) # Prevent rapid API connection bursts
+                        actual_route = self.orchestrator.route_message("eval_session", case["text"])
+                    except Exception:
+                        # If a quota boundary error hits mid-run, instantly toggle offline mode
+                        st.session_state.gemini_broken = True
+                        self.orchestrator = None
+                        actual_route = "LOCAL_FALLBACK"
+                else:
+                    actual_route = "LOCAL_FALLBACK"
+
+                # --- PATHWAY B: Pure Python String-Matching (Offline Local RAG Engine) ---
+                # This catches the fallback row execution if Gemini is disabled/exhausted
+                if actual_route == "LOCAL_FALLBACK":
                     if "aero-" in msg or "order" in msg or "package" in msg or "track" in msg:
                         actual_route = "ORDERS"
                     elif "fee" in msg or "charge" in msg or "price" in msg or "billing" in msg or "cost" in msg:
