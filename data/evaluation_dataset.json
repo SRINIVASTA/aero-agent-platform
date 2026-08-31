@@ -1,0 +1,12 @@
+[
+  {"text": "Why was I charged twice this month? Please check my statement.", "expected_route": "BILLING", "priority": "high"},
+  {"text": "My credit card is expiring next week. How do I change it?", "expected_route": "BILLING", "priority": "medium"},
+  {"text": "Where is my package? It was supposed to arrive two days ago.", "expected_route": "ORDERS", "priority": "high"},
+  {"text": "I need to change the delivery address for my current shipment.", "expected_route": "ORDERS", "priority": "medium"},
+  {"text": "I want to return this broken item and get my money back.", "expected_route": "REFUNDS", "priority": "high"},
+  {"text": "What is your return policy for open-box electronics?", "expected_route": "REFUNDS", "priority": "low"},
+  {"text": "The application keeps crashing every time I click the login button.", "expected_route": "TECH_SUPPORT", "priority": "high"},
+  {"text": "I am getting a 404 error code when trying to load the dashboard.", "expected_route": "TECH_SUPPORT", "priority": "medium"},
+  {"text": "Hello! Can you tell me what your retail store hours are?", "expected_route": "GENERAL", "priority": "low"},
+  {"text": "This service is a total scam and I want to speak to a supervisor!", "expected_route": "ESCALATION", "priority": "high"}
+]
