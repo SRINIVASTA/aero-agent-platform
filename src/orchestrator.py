@@ -31,11 +31,11 @@ class AeroOrchestrator:
             route_data = json.loads(cleaned_text)
             return route_data.get("route", "GENERAL")
             
-        # --- PATHWAY B: Gemini Router Offline (Fallback Traffic Triage) ---
+        # --- PATHWAY B: Gemini Router Offline (Graceful Degradation for Quota Exceeded) ---
         except Exception as e:
             msg = user_message.lower()
             
-            # Simple fallback keyword matching engine to catch routing targets manually
+            # Pure Python structural keyword routing matching your architecture layout
             if "aero-" in msg or "order" in msg or "package" in msg or "track" in msg:
                 return "ORDERS"
             elif "fee" in msg or "charge" in msg or "price" in msg or "billing" in msg or "cost" in msg:
