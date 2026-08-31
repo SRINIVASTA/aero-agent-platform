@@ -18,22 +18,22 @@ if st.sidebar.button("🚀 Unlock Platform"):
     clean_pwd = app_password.strip()
     clean_key = user_gemini_key.strip()
     
-    # 1. Try to read from dashboard secrets. If it fails, default to admin123 instead of crashing!
+    # Try to read from dashboard secrets. If it fails, default to admin123
     try:
         secret_password = st.secrets["auth"]["APP_PASSWORD"]
     except Exception:
         secret_password = "admin123"
     
-    # 2. Match credentials securely
-    if clean_pwd == secret_password and clean_key.startswith("AIza"):
+    # REMOVED THE "AIza" REQUIREMENT RULE: Now it only checks that the password is right and the key field isn't empty!
+    if clean_pwd == secret_password and len(clean_key) > 0:
         st.session_state.authenticated = True
         st.session_state.api_key = clean_key
         st.sidebar.success("🔑 Access Granted!")
         st.rerun() 
     else:
         st.session_state.authenticated = False
-        if not clean_key.startswith("AIza"):
-            st.sidebar.error("❌ Key Error: Your Gemini Key format is invalid. It must begin with 'AIza'.")
+        if len(clean_key) == 0:
+            st.sidebar.error("❌ Key Error: The Gemini API Key field cannot be left completely empty.")
         else:
             st.sidebar.error("❌ Password Error: Invalid password entered. Please try again.")
 
