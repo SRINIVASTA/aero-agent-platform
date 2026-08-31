@@ -9,14 +9,13 @@ class AeroOrchestrator:
         self.api_key = api_key if api_key else "OFFLINE"
         self.db = FirestoreService()
         
-        # Load rule parameters safely
         try:
             with open("src/prompts/router_prompt.txt", "r") as f:
                 self.system_instruction = f.read()
         except Exception:
             self.system_instruction = "Fallback Routing Rules"
 
-        # Initialize the API client
+        # Initialize Google SDK only if the token state is valid and alive
         try:
             if self.api_key != "OFFLINE" and not st.session_state.get("gemini_broken", False):
                 self.client = genai.Client(api_key=api_key)
@@ -29,8 +28,7 @@ class AeroOrchestrator:
         self.db.add_message(session_id, "user", user_message)
         msg = user_message.lower()
         
-        # --- PATHWAY A: The Gemini Router (Normal Operation with Credits) ---
-        # FIXED: Added strict try/except blocks inside the actual routing engine line execution
+        # --- PATHWAY A: The Gemini Router (Runs normally with active quota) ---
         if self.client and not st.session_state.get("gemini_broken", False):
             try:
                 full_history = self.db.get_history(session_id)
@@ -49,10 +47,10 @@ class AeroOrchestrator:
                 route_data = json.loads(cleaned_text)
                 return route_data.get("route", "GENERAL")
             except Exception:
-                # INTERCEPT CODES: Catch 429 errors safely, save the failure flag, and drop straight to local data
+                # Catch quota errors, save the state flag, and allow code execution to continue below
                 st.session_state.gemini_broken = True
 
-        # --- PATHWAY B: Pure Python String-Matching (Your Offline RAG Fallback) ---
+        # --- PATHWAY B: Pure Python Structural String-Matching Engine ---
         if "aero-" in msg or "order" in msg or "package" in msg or "track" in msg:
             return "ORDERS"
         elif "fee" in msg or "charge" in msg or "price" in msg or "billing" in msg or "cost" in msg:
